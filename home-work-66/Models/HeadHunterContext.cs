@@ -6,7 +6,6 @@ namespace home_work_66.Models;
 
 public class HeadHunterContext: IdentityDbContext<User, IdentityRole<int>, int>
 {
-    
-    
+    public DbSet<User> Users { get; set; }
     public HeadHunterContext(DbContextOptions<HeadHunterContext> options) : base(options) {}
 }
