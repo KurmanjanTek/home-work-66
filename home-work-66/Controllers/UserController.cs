@@ -3,6 +3,8 @@ using home_work_66.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace home_work_66.Controllers;
 
@@ -28,6 +30,13 @@ public class UserController : Controller
         {
             return RedirectToAction("Login", "Account");
         }
+        
+        List<Resume> resumes = await _db.Resumes
+            .Where(resume => resume.UserId == currentUser.Id)
+            .OrderByDescending(resume => resume.UpdatedAt)
+            .ToListAsync();
+
+        ViewBag.Resumes = resumes;
 
         return View(currentUser);
     }
@@ -43,19 +52,6 @@ public class UserController : Controller
             return RedirectToAction("Login", "Account");
         }
 
-        bool emailExists = _db.Users.Any(user => user.Email == model.Email && user.Id != currentUser.Id);
-
-        if (emailExists)
-        {
-            ModelState.AddModelError(nameof(model.Email), "В базе уже существует аккаунт с данным адресом почты");
-        }
-
-        if (!ModelState.IsValid)
-        {
-            ViewBag.OpenEditProfileModal = true;
-            return View("Index", currentUser);
-        }
-
         currentUser.UserName = model.UserName;
         currentUser.Email = model.Email;
         currentUser.PhoneNumber = model.PhoneNumber;
@@ -63,11 +59,8 @@ public class UserController : Controller
         if (model.Avatar != null && model.Avatar.Length > 0)
         {
             string uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "avatars");
-
-            if (!Directory.Exists(uploadsFolder))
-            {
-                Directory.CreateDirectory(uploadsFolder);
-            }
+            
+            Directory.CreateDirectory(uploadsFolder);
 
             string uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(model.Avatar.FileName)}";
             string filePath = Path.Combine(uploadsFolder, uniqueFileName);
