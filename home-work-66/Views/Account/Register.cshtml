@@ -1,0 +1,102 @@
+@model home_work_66.ViewModels.RegisterViewModel
+@{
+ViewData["Title"] = "Регистрация";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/account.css" asp-append-version="true" />
+}
+
+<div class="container account-page">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class=" account card ">
+
+                <h2 class="account-title text-center mb-2">Создать аккаунт</h2>
+
+                <form asp-controller="Account"
+                      asp-action="Register" method="post" enctype="multipart/form-data">
+                    
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    <div class="mb-3">
+                        <label asp-for="IsCompany" class="form-label">Тип аккаунта</label>
+                        
+                        <div class="form-check">
+                            <input asp-for="IsCompany" class="form-check-input"/>
+                            <label asp-for="IsCompany"
+                                   class="form-check-label"> Я представляю компанию
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="UserName" class="form-label"></label>
+                        <input asp-for="UserName" class="form-control" placeholder="Имя или название компании "/>
+                        <span asp-validation-for="UserName" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" class="form-control" placeholder="example@MailAddress.com"/>
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="PhoneNumber" class="form-label"></label>
+                        <input asp-for="PhoneNumber" class="form-control" placeholder="+996 XXX XXX XXX">
+                        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Avatar" class="form-label"></label>
+                        <input asp-for="Avatar" class="form-control" accept="image/*" />
+                        <span asp-validation-for="Avatar" class="text-danger"></span>
+                    </div>
+                    <div>
+                        <label asp-for="Password" class="form-label"></label>
+                        <input asp-for="Password" class="form-control" placeholder="Придумайте пароль">
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                        <button type="button" onclick="togglePassword()"><i class="bi bi-eye"></i></button>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="ConfirmPassword" class="form-label"></label>
+                        <input asp-for="ConfirmPassword" class="form-control" placeholder="Повторите пароль">
+                        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                    </div>
+
+                    <button type="submit" class="btn account-btn w-100">
+                        Зарегистрироваться
+                    </button>
+                </form>
+
+                <p class="text-center mt-4 mb-0">
+                    Уже есть аккаунт?
+                    <a asp-controller="Account" asp-action="Login" class="account-link">Войти</a>
+                </p>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>{
+        function togglePassword() {
+            const input = document.getElementById("password");
+            const icon =event.currentTarget.querySelector("i");
+            
+            if (input.type === "password") {
+                input.type = "text";
+                btn.textContent = "bi bi-eye-slash";
+            } else {
+                input.type = "password";
+                btn.textContent = "bi bi-eye";
+            }
+        }
+    }
+</script>
+}
