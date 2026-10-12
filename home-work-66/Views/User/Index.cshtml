@@ -1,0 +1,88 @@
+﻿@model home_work_66.Models.User
+
+@{
+    ViewData["Title"] = "Личный кабинет";
+}
+
+<div class="container py-4">
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+
+                    <img src="@Model.AvatarUrl" alt="Аватар" class="rounded-circle mb-3" width="130" height="130" style="object-fit: cover;" />
+
+                    <h3 class="mb-3">
+                        @Model.UserName
+                    </h3>
+
+                    <p class="text-muted mb-2">
+                        @Model.Email
+                    </p>
+
+                    <p class="text-muted mb-4">
+                        @Model.PhoneNumber
+                    </p>
+
+                    <button class="btn btn-outline-primary w-100" type="button" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                        Редактировать профиль
+                    </button>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+
+                <h2>
+                    Мои резюме
+                </h2>
+
+                <button class="btn btn-primary" type="button">
+                    Создать резюме
+                </button>
+
+            </div>
+
+            <div class="card shadow-sm border-0">
+
+                <div class="card-body">
+
+                    <p class="text-muted mb-0">
+                        У вас пока нет созданных резюме.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    @{
+        var editProfileModel = new home_work_66.ViewModels.EditProfileViewModel
+        {
+            UserName = Model.UserName ?? "",
+            Email = Model.Email ?? "",
+            PhoneNumber = Model.PhoneNumber ?? ""
+        };
+    }
+    <partial name="_EditProfileModal" model="editProfileModel" />
+    
+    @section Scripts {
+        @{
+            await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        }
+
+        @if (ViewBag.OpenEditProfileModal == true)
+        {
+            <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const modalElement = document.getElementById("editProfileModal");
+                const modal = new bootstrap.Modal(modalElement);
+                modal.show();
+            });
+        </script>
+        }
+    }
+</div>
