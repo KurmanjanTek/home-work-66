@@ -162,8 +162,30 @@ namespace home_work_66.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Facebook")
+                        .HasColumnType("text");
+
                     b.Property<bool>("IsPublished")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("LinkedIn")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("Salary")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("Telegram")
+                        .HasColumnType("text");
 
                     b.Property<string>("Title")
                         .IsRequired()

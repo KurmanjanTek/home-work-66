@@ -34,6 +34,11 @@ public class ResumeController : Controller
         {
             return RedirectToAction("Login", "Account");
         }
+        
+        if (!ModelState.IsValid)
+        {
+            return View(resume);
+        }
 
         resume.UserId = currentUser.Id;
         resume.UpdatedAt = DateTime.UtcNow;
