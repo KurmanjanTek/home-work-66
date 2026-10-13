@@ -15,11 +15,15 @@ public class Resume
     [Required(ErrorMessage = "Укажите ожидаемую зарплату")]
     public decimal? Salary { get; set; }
 
-    public string? Telegram { get; set; }
+    [Required(ErrorMessage = "Введите Telegram")]
+    public string? Telegram { get; set; } = "";
 
-    public string? Email  { get; set; } 
+    [Required(ErrorMessage = "Введите Email")]
+    [EmailAddress(ErrorMessage = "Введите корректный Email")]
+    public string? Email  { get; set; } = "";
 
-    public string? PhoneNumber { get; set; } 
+    [Required(ErrorMessage = "Введите номер телефона")]
+    public string? PhoneNumber { get; set; } = "";
 
     public string?  Facebook { get; set; } 
 

@@ -225,6 +225,7 @@ namespace home_work_66.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Email")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Facebook")
@@ -237,12 +238,14 @@ namespace home_work_66.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("PhoneNumber")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<decimal>("Salary")
                         .HasColumnType("numeric");
 
                     b.Property<string>("Telegram")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Title")
