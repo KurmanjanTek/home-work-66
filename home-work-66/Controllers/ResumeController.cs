@@ -86,6 +86,23 @@ public class ResumeController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AddWorkExperience(WorkExperience workExperience)
     {
+        int currentYear = DateTime.Now.Year;
+
+        if (workExperience.StartYear < 1900 || workExperience.StartYear > currentYear)
+        {
+            ModelState.AddModelError("StartYear", $"Год должен быть от 1900 до {currentYear}");
+        }
+
+        if (workExperience.EndYear < 1900 || workExperience.EndYear > currentYear)
+        {
+            ModelState.AddModelError("EndYear", $"Год должен быть от 1900 до {currentYear}");
+        }
+
+        if (workExperience.EndYear < workExperience.StartYear)
+        {
+            ModelState.AddModelError("EndYear", "Год окончания не может быть раньше года начала");
+        }
+        
         if (!ModelState.IsValid)
         {
             ViewBag.ResumeId = workExperience.ResumeId;
@@ -109,6 +126,13 @@ public class ResumeController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AddEducation(Education education)
     {
+        int currentYear = DateTime.Now.Year;
+
+        if (education.GraduationYear < 1900 || education.GraduationYear > currentYear)
+        {
+            ModelState.AddModelError("GraduationYear", $"Год должен быть от 1900 до {currentYear}");
+        }
+        
         if (!ModelState.IsValid)
         {
             ViewBag.ResumeId = education.ResumeId;
@@ -132,6 +156,13 @@ public class ResumeController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AddCourse(Course course)
     {
+        int currentYear = DateTime.Now.Year;
+
+        if (course.Year < 1900 || course.Year > currentYear)
+        {
+            ModelState.AddModelError("Year", $"Год должен быть от 1900 до {currentYear}");
+        }
+        
         if (!ModelState.IsValid)
         {
             ViewBag.ResumeId = course.ResumeId;

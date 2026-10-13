@@ -14,11 +14,9 @@ public class WorkExperience
 
     [Required(ErrorMessage = "Введите обязанности")]
     public string Responsibilities { get; set; } = "";
-
-    [Range(1900, 2100, ErrorMessage = "Введите корректный год")]
+    
     public int StartYear { get; set; }
-
-    [Range(1900, 2100, ErrorMessage = "Введите корректный год")]
+    
     public int EndYear { get; set; }
 
     public int ResumeId { get; set; }
