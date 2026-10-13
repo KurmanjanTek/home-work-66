@@ -21,7 +21,7 @@ public class ResumeController : Controller
     [HttpGet]
     public IActionResult Create()
     {
-        return View();
+        return PartialView("~/Views/Resume/Partials/_CreateResume.cshtml", new Resume());
     }
 
     [HttpPost]
@@ -32,12 +32,22 @@ public class ResumeController : Controller
 
         if (currentUser == null)
         {
-            return RedirectToAction("Login", "Account");
+            return Json(new
+            { 
+                success = false,
+                message = "Пользователь не найден"
+            });
         }
         
         if (!ModelState.IsValid)
         {
-            return View(resume);
+            var errors = ModelState.Where(x => x.Value != null && x.Value.Errors.Count > 0).ToDictionary(x => x.Key, x => x.Value!.Errors.Select(e => e.ErrorMessage).ToArray());
+
+            return Json(new
+            {
+                success = false,
+                errors
+            });
         }
 
         resume.UserId = currentUser.Id;
@@ -47,7 +57,87 @@ public class ResumeController : Controller
         _db.Resumes.Add(resume);
         await _db.SaveChangesAsync();
 
-        return RedirectToAction("Index", "User");
+        return Json(new
+        {
+            success = true,
+            resumeId = resume.Id,
+            redirectUrl = Url.Action("Details", "Resume", new { id = resume.Id })
+        });
+    }
+    
+    [HttpGet]
+    public async Task<IActionResult> Edit(int id)
+    {
+        User? currentUser = await _userManager.GetUserAsync(User);
+
+        if (currentUser == null)
+        {
+            return Unauthorized();
+        }
+
+        Resume? resume = await _db.Resumes.FirstOrDefaultAsync(r => r.Id == id && r.UserId == currentUser.Id);
+
+        if (resume == null)
+        {
+            return NotFound();
+        }
+
+        return PartialView("~/Views/Resume/Partials/_EditResume.cshtml", resume);
+    }
+    
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(Resume model)
+    {
+        User? currentUser = await _userManager.GetUserAsync(User);
+
+        if (currentUser == null)
+        {
+            return Json(new
+            {
+                success = false,
+                message = "Пользователь не найден"
+            });
+        }
+
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState.Where(x => x.Value != null && x.Value.Errors.Count > 0).ToDictionary(x => x.Key, x => x.Value!.Errors.Select(e => e.ErrorMessage).ToArray());
+
+            return Json(new
+            {
+                success = false,
+                errors
+            });
+        }
+
+        Resume? resume = await _db.Resumes.FirstOrDefaultAsync(r => r.Id == model.Id && r.UserId == currentUser.Id);
+
+        if (resume == null)
+        {
+            return Json(new
+            {
+                success = false,
+                message = "Резюме не найдено"
+            });
+        }
+
+        resume.Title = model.Title;
+        resume.Category = model.Category;
+        resume.Salary = model.Salary;
+
+        resume.Email = model.Email;
+        resume.PhoneNumber = model.PhoneNumber;
+        resume.Telegram = model.Telegram;
+        resume.Facebook = model.Facebook;
+        resume.LinkedIn = model.LinkedIn;
+
+        await _db.SaveChangesAsync();
+
+        return Json(new
+        {
+            success = true
+        });
     }
     
     [HttpPost]
@@ -79,7 +169,7 @@ public class ResumeController : Controller
     public IActionResult AddWorkExperience(int resumeId)
     {
         ViewBag.ResumeId = resumeId;
-        return View();
+        return View("~/Views/Resume/WorkExperience/AddWorkExperience.cshtml");
     }
 
     [HttpPost]
@@ -106,7 +196,7 @@ public class ResumeController : Controller
         if (!ModelState.IsValid)
         {
             ViewBag.ResumeId = workExperience.ResumeId;
-            return View(workExperience);
+            return View("~/Views/Resume/WorkExperience/AddWorkExperience.cshtml", workExperience);
         }
 
         _db.WorkExperiences.Add(workExperience);
@@ -119,7 +209,7 @@ public class ResumeController : Controller
     public IActionResult AddEducation(int resumeId)
     {
         ViewBag.ResumeId = resumeId;
-        return View();
+        return View("~/Views/Resume/Education/AddEducation.cshtml");
     }
 
     [HttpPost]
@@ -136,7 +226,7 @@ public class ResumeController : Controller
         if (!ModelState.IsValid)
         {
             ViewBag.ResumeId = education.ResumeId;
-            return View(education);
+            return View("~/Views/Resume/Education/AddEducation.cshtml", education);
         }
 
         _db.Educations.Add(education);
@@ -149,7 +239,7 @@ public class ResumeController : Controller
     public IActionResult AddCourse(int resumeId)
     {
         ViewBag.ResumeId = resumeId;
-        return View();
+        return View("~/Views/Resume/Courses/AddCourse.cshtml");
     }
 
     [HttpPost]
@@ -166,7 +256,7 @@ public class ResumeController : Controller
         if (!ModelState.IsValid)
         {
             ViewBag.ResumeId = course.ResumeId;
-            return View(course);
+            return View("~/Views/Resume/Courses/AddCourse.cshtml", course);
         }
 
         _db.Courses.Add(course);
