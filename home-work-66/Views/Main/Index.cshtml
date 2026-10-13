@@ -1,0 +1,25 @@
+﻿@{
+    ViewData["Title"] = "Главная";
+}
+
+<div class="home-page">
+    <div class="home-hero">
+        <h1>Вакансии для Вас</h1>
+
+        <div class="home-actions">
+            <a asp-controller="Account" asp-action="Register" class="btn btn-primary btn-lg">
+                Создать резюме
+            </a>
+            <a asp-controller="Account" asp-action="Login" class="btn btn-outline-primary btn-lg">
+                Войти
+            </a>
+        </div>
+    </div>
+
+    <div class="home-section">
+        <h2>Последние вакансии</h2>
+        <p class="text-muted">
+            Здесь позже будет отображаться список опубликованных вакансий.
+        </p>
+    </div>
+</div>

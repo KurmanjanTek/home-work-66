@@ -1,0 +1,123 @@
+﻿@model home_work_66.Models.Resume
+
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div class="container py-4">
+
+    <div class="mb-4">
+        <h2 class="mb-1">@Model.Title</h2>
+        <p class="text-muted">@Model.Category</p>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+
+            <h4 class="mb-3">Основная информация</h4>
+
+            @if (Model.Salary != null)
+            {
+                <p><strong>Ожидаемая зарплата:</strong> @Model.Salary</p>
+            }
+
+            <p><strong>Email:</strong> @Model.Email</p>
+            <p><strong>Телефон:</strong> @Model.PhoneNumber</p>
+            <p><strong>Telegram:</strong> @Model.Telegram</p>
+
+            @if (!string.IsNullOrEmpty(Model.Facebook))
+            {
+                <p><strong>Facebook:</strong> @Model.Facebook</p>
+            }
+
+            @if (!string.IsNullOrEmpty(Model.LinkedIn))
+            {
+                <p><strong>LinkedIn:</strong> @Model.LinkedIn</p>
+            }
+
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+
+            <h4 class="mb-3">Опыт работы</h4>
+
+            @if (Model.WorkExperiences.Count == 0)
+            {
+                <p class="text-muted mb-0">Опыт работы не указан.</p>
+            }
+            else
+            {
+                @foreach (var workExperience in Model.WorkExperiences)
+                {
+                    <div class="border rounded p-3 mb-3">
+                        <h5>@workExperience.CompanyName</h5>
+
+                        <p class="mb-1">
+                            <strong>Должность:</strong> @workExperience.Position
+                        </p>
+
+                        <p class="mb-1">
+                            <strong>Период:</strong> @workExperience.StartYear - @workExperience.EndYear
+                        </p>
+
+                        <p class="mb-0">
+                            <strong>Обязанности:</strong> @workExperience.Responsibilities
+                        </p>
+                    </div>
+                }
+            }
+
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+
+            <h4 class="mb-3">Образование</h4>
+
+            @if (Model.Educations.Count == 0)
+            {
+                <p class="text-muted mb-0">Образование не указано.</p>
+            }
+            else
+            {
+                @foreach (var education in Model.Educations)
+                {
+                    <div class="border rounded p-3 mb-3">
+                        <h5>@education.InstitutionName</h5>
+                        <p class="mb-1">@education.Specialty</p>
+                        <p class="mb-0">@education.GraduationYear</p>
+                    </div>
+                }
+            }
+
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+
+            <h4 class="mb-3">Курсы</h4>
+
+            @if (Model.Courses.Count == 0)
+            {
+                <p class="text-muted mb-0">Курсы не указаны.</p>
+            }
+            else
+            {
+                @foreach (var course in Model.Courses)
+                {
+                    <div class="border rounded p-3 mb-3">
+                        <h5>@course.CourseName</h5>
+                        <p class="mb-1">@course.OrganizationName</p>
+                        <p class="mb-0">@course.Year</p>
+                    </div>
+                }
+            }
+
+        </div>
+    </div>
+
+</div>
