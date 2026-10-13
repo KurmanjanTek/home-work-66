@@ -243,4 +243,115 @@ public class ResumeController : Controller
 
         return View(resume);
     }
+    
+    [HttpGet]
+    public async Task<IActionResult> EditEducation(int id)
+    {
+        Education? education = await _db.Educations.FindAsync(id);
+
+        if (education == null)
+        {
+            return NotFound();
+        }
+
+        return View(education);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EditEducation(Education education)
+    {
+        int currentYear = DateTime.Now.Year;
+
+        if (education.GraduationYear < 1900 || education.GraduationYear > currentYear)
+        {
+            ModelState.AddModelError(
+                "GraduationYear",
+                $"Год должен быть от 1900 до {currentYear}"
+            );
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return View(education);
+        }
+
+        _db.Educations.Update(education);
+        await _db.SaveChangesAsync();
+
+        return RedirectToAction("Details", new { id = education.ResumeId });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteEducation(int id)
+    {
+        Education? education = await _db.Educations.FindAsync(id);
+
+        if (education == null)
+        {
+            return NotFound();
+        }
+
+        int resumeId = education.ResumeId;
+
+        _db.Educations.Remove(education);
+        await _db.SaveChangesAsync();
+
+        return RedirectToAction("Details", new { id = resumeId });
+    }
+    
+    [HttpGet]
+    public async Task<IActionResult> EditCourse(int id)
+    {
+        Course? course = await _db.Courses.FindAsync(id);
+
+        if (course == null)
+        {
+            return NotFound();
+        }
+
+        return View(course);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EditCourse(Course course)
+    {
+        int currentYear = DateTime.Now.Year;
+
+        if (course.Year < 1900 || course.Year > currentYear)
+        {
+            ModelState.AddModelError("Year", $"Год должен быть от 1900 до {currentYear}");
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return View(course);
+        }
+
+        _db.Courses.Update(course);
+        await _db.SaveChangesAsync();
+
+        return RedirectToAction("Details", new { id = course.ResumeId });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteCourse(int id)
+    {
+        Course? course = await _db.Courses.FindAsync(id);
+
+        if (course == null)
+        {
+            return NotFound();
+        }
+
+        int resumeId = course.ResumeId;
+
+        _db.Courses.Remove(course);
+        await _db.SaveChangesAsync();
+
+        return RedirectToAction("Details", new { id = resumeId });
+    }
 }

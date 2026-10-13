@@ -136,6 +136,17 @@
                         <p class="mb-0">
                             <strong>Год окончания:</strong> @education.GraduationYear
                         </p>
+                        
+                        <div class="mt-3">
+                            <a asp-controller="Resume" asp-action="EditEducation" asp-route-id="@education.Id" class="btn btn-outline-primary btn-sm">
+                                Редактировать
+                            </a>
+
+                            <form asp-controller="Resume" asp-action="DeleteEducation" method="post" class="d-inline">
+                                <input type="hidden" name="id" value="@education.Id" />
+                                <button type="submit" class="btn btn-outline-danger btn-sm">Удалить</button>
+                            </form>
+                        </div>
 
                     </div>
                 }
@@ -167,6 +178,17 @@
                         <h5>@course.CourseName</h5>
                         <p class="mb-1">@course.OrganizationName</p>
                         <p class="mb-0">@course.Year</p>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <a asp-controller="Resume" asp-action="EditCourse" asp-route-id="@course.Id" class="btn btn-outline-primary btn-sm">
+                            Редактировать
+                        </a>
+
+                        <form asp-controller="Resume" asp-action="DeleteCourse" method="post" class="d-inline">
+                            <input type="hidden" name="id" value="@course.Id" />
+                            <button type="submit" class="btn btn-outline-danger btn-sm">Удалить</button>
+                        </form>
                     </div>
                 }
             }
