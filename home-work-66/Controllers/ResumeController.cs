@@ -268,7 +268,14 @@ public class ResumeController : Controller
     [HttpGet]
     public async Task<IActionResult> EditWorkExperience(int id)
     {
-        WorkExperience? workExperience = await _db.WorkExperiences.FindAsync(id);
+        User? currentUser = await _userManager.GetUserAsync(User);
+
+        if (currentUser == null)
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        WorkExperience? workExperience = await _db.WorkExperiences.Include(w => w.Resume).FirstOrDefaultAsync(w => w.Id == id && w.Resume!.UserId == currentUser.Id);
 
         if (workExperience == null)
         {
@@ -297,17 +304,26 @@ public class ResumeController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteWorkExperience(int id)
     {
-        WorkExperience? workExperience = await _db.WorkExperiences.FindAsync(id);
+        User? currentUser = await _userManager.GetUserAsync(User);
+
+        if (currentUser == null)
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        WorkExperience? workExperience = await _db.WorkExperiences.Include(w => w.Resume).FirstOrDefaultAsync(w => w.Id == id && w.Resume!.UserId == currentUser.Id);
 
         if (workExperience == null)
         {
             return NotFound();
         }
+        
+        int resumeId = workExperience.ResumeId;
 
         _db.WorkExperiences.Remove(workExperience);
         await _db.SaveChangesAsync();
 
-        return RedirectToAction("Index", "User");
+        return RedirectToAction("Details", new { id = resumeId });
     }
     
     [HttpGet]
@@ -337,8 +353,15 @@ public class ResumeController : Controller
     [HttpGet]
     public async Task<IActionResult> EditEducation(int id)
     {
-        Education? education = await _db.Educations.FindAsync(id);
+        User? currentUser = await _userManager.GetUserAsync(User);
 
+        if (currentUser == null)
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        Education? education = await _db.Educations.Include(e => e.Resume).FirstOrDefaultAsync(e => e.Id == id && e.Resume!.UserId == currentUser.Id);
+        
         if (education == null)
         {
             return NotFound();
@@ -376,8 +399,15 @@ public class ResumeController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteEducation(int id)
     {
-        Education? education = await _db.Educations.FindAsync(id);
+        User? currentUser = await _userManager.GetUserAsync(User);
 
+        if (currentUser == null)
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        Education? education = await _db.Educations.Include(e => e.Resume).FirstOrDefaultAsync(e => e.Id == id && e.Resume!.UserId == currentUser.Id);
+        
         if (education == null)
         {
             return NotFound();
@@ -394,8 +424,19 @@ public class ResumeController : Controller
     [HttpGet]
     public async Task<IActionResult> EditCourse(int id)
     {
-        Course? course = await _db.Courses.FindAsync(id);
+        User? currentUser = await _userManager.GetUserAsync(User);
 
+        if (currentUser == null)
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        Course? course = await _db.Courses.Include(c => c.Resume).FirstOrDefaultAsync(c => c.Id == id && c.Resume!.UserId == currentUser.Id);
+
+        if (course == null)
+        {
+            return NotFound();
+        }
         if (course == null)
         {
             return NotFound();
@@ -430,8 +471,20 @@ public class ResumeController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteCourse(int id)
     {
-        Course? course = await _db.Courses.FindAsync(id);
+        User? currentUser = await _userManager.GetUserAsync(User);
 
+        if (currentUser == null)
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        Course? course = await _db.Courses.Include(c => c.Resume).FirstOrDefaultAsync(c => c.Id == id && c.Resume!.UserId == currentUser.Id);
+
+        if (course == null)
+        {
+            return NotFound();
+        }
+        
         if (course == null)
         {
             return NotFound();
