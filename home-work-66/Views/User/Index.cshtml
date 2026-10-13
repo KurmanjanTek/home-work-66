@@ -89,7 +89,15 @@
                                 <button class="btn btn-outline-primary btn-sm" type="button">
                                     Редактировать
                                 </button>
-
+                                
+                                <a asp-controller="Resume" asp-action="AddWorkExperience" asp-route-resumeId="@resume.Id" class="btn btn-outline-primary btn-sm">
+                                    Добавить опыт
+                                </a>
+                                
+                                <a asp-controller="Resume" asp-action="AddEducation" asp-route-resumeId="@resume.Id" class="btn btn-outline-primary btn-sm">
+                                    Добавить образование
+                                </a>
+                                
                                 <form asp-controller="Resume" asp-action="UpdateDate" method="post" class="d-inline">
                                     <input type="hidden" name="id" value="@resume.Id" />
                                     <button type="submit" class="btn btn-outline-secondary btn-sm">Обновить</button>

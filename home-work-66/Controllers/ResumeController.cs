@@ -74,4 +74,50 @@ public class ResumeController : Controller
 
         return RedirectToAction("Index", "User");
     }
+    
+    [HttpGet]
+    public IActionResult AddWorkExperience(int resumeId)
+    {
+        ViewBag.ResumeId = resumeId;
+        return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AddWorkExperience(WorkExperience workExperience)
+    {
+        if (!ModelState.IsValid)
+        {
+            ViewBag.ResumeId = workExperience.ResumeId;
+            return View(workExperience);
+        }
+
+        _db.WorkExperiences.Add(workExperience);
+        await _db.SaveChangesAsync();
+
+        return RedirectToAction("Index", "User");
+    }
+    
+    [HttpGet]
+    public IActionResult AddEducation(int resumeId)
+    {
+        ViewBag.ResumeId = resumeId;
+        return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AddEducation(Education education)
+    {
+        if (!ModelState.IsValid)
+        {
+            ViewBag.ResumeId = education.ResumeId;
+            return View(education);
+        }
+
+        _db.Educations.Add(education);
+        await _db.SaveChangesAsync();
+
+        return RedirectToAction("Index", "User");
+    }
 }

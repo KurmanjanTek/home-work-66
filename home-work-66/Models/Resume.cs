@@ -32,4 +32,8 @@ public class Resume
     public int  UserId { get; set; } 
 
     public User? User { get; set; }
+    
+    public List<WorkExperience> WorkExperiences { get; set; } = new();
+    public List<Education> Educations { get; set; } = new();
+    public List<Course> Courses { get; set; } = new();
 }
