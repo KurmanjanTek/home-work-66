@@ -120,4 +120,96 @@ public class ResumeController : Controller
 
         return RedirectToAction("Index", "User");
     }
+    
+    [HttpGet]
+    public IActionResult AddCourse(int resumeId)
+    {
+        ViewBag.ResumeId = resumeId;
+        return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AddCourse(Course course)
+    {
+        if (!ModelState.IsValid)
+        {
+            ViewBag.ResumeId = course.ResumeId;
+            return View(course);
+        }
+
+        _db.Courses.Add(course);
+        await _db.SaveChangesAsync();
+
+        return RedirectToAction("Details", new { id = course.ResumeId });
+    }
+    
+    [HttpGet]
+    public async Task<IActionResult> EditWorkExperience(int id)
+    {
+        WorkExperience? workExperience = await _db.WorkExperiences.FindAsync(id);
+
+        if (workExperience == null)
+        {
+            return NotFound();
+        }
+
+        return View(workExperience);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EditWorkExperience(WorkExperience workExperience)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(workExperience);
+        }
+
+        _db.WorkExperiences.Update(workExperience);
+        await _db.SaveChangesAsync();
+
+        return RedirectToAction("Index", "User");
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteWorkExperience(int id)
+    {
+        WorkExperience? workExperience = await _db.WorkExperiences.FindAsync(id);
+
+        if (workExperience == null)
+        {
+            return NotFound();
+        }
+
+        _db.WorkExperiences.Remove(workExperience);
+        await _db.SaveChangesAsync();
+
+        return RedirectToAction("Index", "User");
+    }
+    
+    [HttpGet]
+    public async Task<IActionResult> Details(int id)
+    {
+        User? currentUser = await _userManager.GetUserAsync(User);
+
+        if (currentUser == null)
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        Resume? resume = await _db.Resumes
+            .Include(r => r.WorkExperiences)
+            .Include(r => r.Educations)
+            .Include(r => r.Courses)
+            .FirstOrDefaultAsync(r => r.Id == id && r.UserId == currentUser.Id);
+
+        if (resume == null)
+        {
+            return NotFound();
+        }
+
+        return View(resume);
+    }
 }
