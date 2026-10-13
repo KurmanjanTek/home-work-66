@@ -104,6 +104,23 @@
                                     Добавить курс
                                 </a>
                                 
+                                <form asp-controller="Resume" asp-action="TogglePublication" method="post" class="d-inline">
+                                    <input type="hidden" name="id" value="@resume.Id" />
+
+                                    @if (resume.IsPublished)
+                                    {
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                                            Снять с публикации
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button type="submit" class="btn btn-outline-success btn-sm">
+                                            Опубликовать
+                                        </button>
+                                    }
+                                </form>
+                                
                                 <form asp-controller="Resume" asp-action="UpdateDate" method="post" class="d-inline">
                                     <input type="hidden" name="id" value="@resume.Id" />
                                     <button type="submit" class="btn btn-outline-secondary btn-sm">Обновить</button>

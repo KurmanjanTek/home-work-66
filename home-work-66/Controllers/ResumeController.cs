@@ -444,4 +444,53 @@ public class ResumeController : Controller
 
         return RedirectToAction("Details", new { id = resumeId });
     }
+    
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> TogglePublication(int id)
+    {
+        User? currentUser = await _userManager.GetUserAsync(User);
+
+        if (currentUser == null)
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        Resume? resume = await _db.Resumes
+            .FirstOrDefaultAsync(r => r.Id == id && r.UserId == currentUser.Id);
+
+        if (resume == null)
+        {
+            return NotFound();
+        }
+
+        resume.IsPublished = !resume.IsPublished;
+
+        await _db.SaveChangesAsync();
+
+        return RedirectToAction("Index", "User");
+    }
+    
+    [HttpGet]
+    [AllowAnonymous]
+    public async Task<IActionResult> Published()
+    {
+        List<Resume> resumes = await _db.Resumes.Where(r => r.IsPublished).OrderByDescending(r => r.UpdatedAt).ToListAsync();
+
+        return View(resumes);
+    }
+    
+    [HttpGet]
+    [AllowAnonymous]
+    public async Task<IActionResult> PublicDetails(int id)
+    {
+        Resume? resume = await _db.Resumes.Include(r => r.WorkExperiences).Include(r => r.Educations).Include(r => r.Courses).FirstOrDefaultAsync(r => r.Id == id && r.IsPublished);
+
+        if (resume == null)
+        {
+            return NotFound();
+        }
+
+        return View(resume);
+    }
 }
