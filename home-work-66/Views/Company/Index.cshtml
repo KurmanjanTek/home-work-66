@@ -1,0 +1,24 @@
+@model IEnumerable<home_work_66.Models.Vacancy>
+
+<a asp-action="CreateVacancy">Создать вакансию</a>
+
+@foreach (var vacancy in Model) 
+{ 
+    <div> <h3>@vacancy.Title</h3>
+        <p>Зарплата: @vacancy.Salary</p>
+        <p>Последнее обновление: @vacancy.UpdatedAt</p>
+        <p>Опубликована: @(vacancy.IsPublished ? "Да" : "Нет")</p>
+        <a asp-action="EditVacancy" asp-route-id="@vacancy.Id">
+            Редактировать
+        </a>
+        <form asp-action="UpdateVacancy" asp-route-id="@vacancy.Id" method="post">
+            <button type="submit">Обновить дату</button>
+        </form>
+        <form asp-action="TogglePublish" asp-route-id="@vacancy.Id" method="post">
+            <button type="submit">
+                @(vacancy.IsPublished ? "Скрыть" : "Опубликовать")
+            </button>
+        </form>
+    </div>
+    <hr/>
+}
