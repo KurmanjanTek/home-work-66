@@ -1,0 +1,40 @@
+@model List<home_work_66.Models.Resume> 
+
+<div class="col-12">
+    @if (Model != null && Model.Any())
+    {
+        foreach (var resume in Model)
+        {
+            <a asp-controller="Resume"
+               asp-action="PublicDetails"
+               asp-route-id="@resume.Id"
+               class="card shadow-sm border-0 rounded-4 mb-3 w-100 text-decoration-none text-dark">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="fw-bold text-dark mb-0">@resume.Title</h4>
+                        <span class="fs-5 fw-bold text-primary">
+                            @resume.Salary сом
+                        </span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                        <span class="fw-semibold">
+                            <i class="bi bi-person-circle me-1 text-secondary"></i>
+                            @resume.User?.UserName
+                        </span>
+                        <small class="text-muted">
+                            <i class="bi bi-clock-history me-1"></i>
+                            Обновлено: @resume.UpdatedAt.ToString("dd.MM.yyyy")
+                        </small>
+                    </div>
+                </div>
+            </a>
+        }
+    }
+    else
+    {
+        <div class="alert alert-light text-center py-5 border shadow-sm rounded-4">
+            <i class="bi bi-file-earmark-text fs-1 text-muted d-block mb-2"></i>
+            <h5 class="text-muted mb-0">Опубликованных резюме пока нет.</h5>
+        </div>
+    }
+</div>

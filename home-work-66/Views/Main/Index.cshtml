@@ -1,25 +1,36 @@
 ﻿@{
-    ViewData["Title"] = "Главная";
+    ViewBag.Title = "Главная - HeadHunter";
+    Layout = "_Layout";
 }
-
-<div class="home-page">
-    <div class="home-hero">
-        <h1>Вакансии для Вас</h1>
-
-        <div class="home-actions">
-            <a asp-controller="Account" asp-action="Register" class="btn btn-primary btn-lg">
-                Создать резюме
-            </a>
-            <a asp-controller="Account" asp-action="Login" class="btn btn-outline-primary btn-lg">
-                Войти
-            </a>
-        </div>
-    </div>
-
-    <div class="home-section">
-        <h2>Последние вакансии</h2>
-        <p class="text-muted">
-            Здесь позже будет отображаться список опубликованных вакансий.
-        </p>
+<h1>@(User.IsInRole("user") ? "Вакансии" : "Резюме")</h1>
+<div class="container py-4">
+    <div id="contentContainer" class="row justify-content-center">
+   
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        let listContainer = $('#contentContainer');
+        $(document).ready(function () {
+            @if (User.IsInRole("user"))
+            {
+                <text>
+                    listContainer.load('@Url.Action("GetVacancies", "Main")')
+                </text>
+            }
+            else if (User.IsInRole("company")) 
+            {
+                <text>
+                    listContainer.load('@Url.Action("Published", "Resume")')
+                </text>
+            }
+            else 
+            {
+                <text>
+                    listContainer.load('@Url.Action("GetVacancies", "Main")')
+                </text>
+            }
+        });
+    </script>
+}

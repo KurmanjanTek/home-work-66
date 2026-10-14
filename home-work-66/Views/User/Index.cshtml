@@ -95,9 +95,13 @@ Layout = "_Layout";
     });
     
     function loadResumes() {
-        $.get('@Url.Action("GetResumes", "Resume")', function (data) {
-            $('#resumesContainer').html(data);
-        });
+        $.get('@Url.Action("GetResumes", "Resume")')
+            .done(function (data) {
+                $('#resumesContainer').html(data);
+            })
+            .fail(function (xhr) {
+                $('#resumesContainer').html('<div class="col-12"><p class="text-danger">Ошибка загрузки резюме: ' + xhr.status + '</p></div>');
+            });
     }
     $(document).ready(function() {
         loadResumes();

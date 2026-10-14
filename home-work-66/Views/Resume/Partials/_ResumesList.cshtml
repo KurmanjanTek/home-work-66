@@ -22,7 +22,7 @@ else
                                     @resume.Title
                                 </a>
                             </h5>
-                            <span class="badge bg-light text-dark border me-2">@(resume.Category?.Name ?? "Без категории")</span>
+                            <span class="badge bg-light text-dark border me-2">Категория: @(resume.Category?.Name ?? "—")</span>
                             @if (resume.IsPublished)
                             {
                                 <span class="badge bg-success">Опубликовано</span>

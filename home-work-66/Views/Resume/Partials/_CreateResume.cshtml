@@ -14,7 +14,7 @@
             <option value="">Выберите категорию</option>
             @if (ViewBag.Categories != null)
             {
-                foreach (var category in (List<home_work_66.Models.Category>)ViewBag.Categories)
+                foreach (var category in ViewBag.Categories)
                 {
                     <option value="@category.Id">@category.Name</option>
                 }
