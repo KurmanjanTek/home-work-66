@@ -552,11 +552,12 @@ public class ResumeController : Controller
     {
         List<Resume> resumes = await _db.Resumes
             .Include(r => r.Category)
+            .Include(r => r.User)
             .Where(r => r.IsPublished)
             .OrderByDescending(r => r.UpdatedAt)
             .ToListAsync();
 
-        return View(resumes);
+        return PartialView("Partials/_PublishedResumesPartialView", resumes);
     }
     
     [HttpGet]
