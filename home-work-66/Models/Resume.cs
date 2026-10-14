@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace home_work_66.Models;
 
@@ -10,7 +10,11 @@ public class Resume
     public string Title { get; set; } = "";
     
     [Required(ErrorMessage = "Выберите категорию")]
-    public string Category { get; set; } = "";
+    [Range(1, int.MaxValue, ErrorMessage = "Выберите категорию")]
+    [Display(Name = "Категория")]
+    public int CategoryId { get; set; }
+
+    public Category? Category { get; set; }
 
     [Required(ErrorMessage = "Укажите ожидаемую зарплату")]
     public decimal? Salary { get; set; }

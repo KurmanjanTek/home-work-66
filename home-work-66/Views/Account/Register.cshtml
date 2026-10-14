@@ -52,11 +52,22 @@ ViewData["Title"] = "Регистрация";
                         <input asp-for="Avatar" class="form-control" accept="image/*" />
                         <span asp-validation-for="Avatar" class="text-danger"></span>
                     </div>
-                    <div>
+                    <div class="mb-3">
                         <label asp-for="Password" class="form-label"></label>
-                        <input asp-for="Password" class="form-control" placeholder="Придумайте пароль">
+                        <div class="password-wrapper">
+                            <input asp-for="Password"
+                                   type="password"
+                                   id="password"
+                                   class="form-control"
+                                   placeholder="Придумайте пароль">
+                            <button type="button"
+                                    class="password-toggle"
+                                    onclick="togglePassword(this)"
+                                    aria-label="Показать пароль">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
                         <span asp-validation-for="Password" class="text-danger"></span>
-                        <button type="button" onclick="togglePassword()"><i class="bi bi-eye"></i></button>
                     </div>
                     
                     <div class="mb-3">
@@ -84,19 +95,37 @@ ViewData["Title"] = "Регистрация";
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 
-    <script>{
-        function togglePassword() {
+    <script>
+        function togglePassword(button) {
             const input = document.getElementById("password");
-            const icon =event.currentTarget.querySelector("i");
+            const icon = button.querySelector("i");
             
             if (input.type === "password") {
                 input.type = "text";
-                btn.textContent = "bi bi-eye-slash";
+                icon.classList.remove("bi-eye");
+                icon.classList.add("bi-eye-slash");
+                button.setAttribute("aria-label", "Скрыть пароль");
             } else {
                 input.type = "password";
-                btn.textContent = "bi bi-eye";
+                icon.classList.remove("bi-eye-slash");
+                icon.classList.add("bi-eye");
+                button.setAttribute("aria-label", "Показать пароль");
             }
         }
-    }
-</script>
+
+        $(function () {
+            function updateRoleLabels() {
+                if ($('#IsCompany').is(':checked')) {
+                    $('label[for="UserName"]').text('Имя компании');
+                    $('#UserName').attr('placeholder', 'Название компании');
+                } else {
+                    $('label[for="UserName"]').text('Имя пользователя');
+                    $('#UserName').attr('placeholder', 'Имя пользователя');
+                }
+            }
+
+            $('#IsCompany').on('change', updateRoleLabels);
+            updateRoleLabels();
+        });
+    </script>
 }

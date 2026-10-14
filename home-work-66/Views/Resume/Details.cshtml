@@ -1,4 +1,4 @@
-﻿@model home_work_66.Models.Resume
+@model home_work_66.Models.Resume
 
 @{
     ViewData["Title"] = "Резюме";
@@ -9,7 +9,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="mb-1">@Model.Title</h2>
-            <p class="text-muted mb-0">@Model.Category</p>
+            <p class="text-muted mb-0">@Model.Category?.Name</p>
         </div>
 
         <a asp-controller="User" asp-action="Index" class="btn btn-secondary">

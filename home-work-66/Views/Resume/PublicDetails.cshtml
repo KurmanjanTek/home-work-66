@@ -1,4 +1,4 @@
-﻿@model home_work_66.Models.Resume
+@model home_work_66.Models.Resume
 
 @{
     ViewData["Title"] = Model.Title;
@@ -8,7 +8,7 @@
 
     <div class="mb-4">
         <h2 class="mb-1">@Model.Title</h2>
-        <p class="text-muted">@Model.Category</p>
+        <p class="text-muted">@Model.Category?.Name</p>
     </div>
 
     <div class="card shadow-sm border-0 mb-4">

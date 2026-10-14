@@ -1,4 +1,4 @@
-﻿@model home_work_66.Models.WorkExperience
+@model home_work_66.Models.WorkExperience
 
 @{
     ViewData["Title"] = "Редактировать опыт работы";
@@ -51,7 +51,7 @@
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-primary">Сохранить</button>
 
-                            <a asp-controller="User" asp-action="Index" class="btn btn-secondary">
+                            <a asp-controller="Resume" asp-action="Details" asp-route-id="@Model.ResumeId" class="btn btn-secondary">
                                 Отмена
                             </a>
                         </div>

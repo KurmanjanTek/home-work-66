@@ -1,7 +1,7 @@
-﻿@model home_work_66.Models.Resume
+@model home_work_66.Models.Resume
 
 <form id="createResumeForm" asp-controller="Resume" asp-action="Create" method="post">
-
+    <h4>Создать резюме</h4>
     <div class="mb-3">
         <label asp-for="Title" class="form-label">Название резюме *</label>
         <input asp-for="Title" class="form-control" />
@@ -9,17 +9,18 @@
     </div>
 
     <div class="mb-3">
-        <label asp-for="Category" class="form-label">Категория *</label>
-        <select asp-for="Category" class="form-select">
+        <label asp-for="CategoryId" class="form-label">Категория *</label>
+        <select asp-for="CategoryId" class="form-select">
             <option value="">Выберите категорию</option>
-            <option value="IT">IT</option>
-            <option value="Продажи">Продажи</option>
-            <option value="Маркетинг">Маркетинг</option>
-            <option value="Финансы">Финансы</option>
-            <option value="Образование">Образование</option>
-            <option value="Другое">Другое</option>
+            @if (ViewBag.Categories != null)
+            {
+                foreach (var category in (List<home_work_66.Models.Category>)ViewBag.Categories)
+                {
+                    <option value="@category.Id">@category.Name</option>
+                }
+            }
         </select>
-        <span asp-validation-for="Category" class="text-danger"></span>
+        <span asp-validation-for="CategoryId" class="text-danger"></span>
     </div>
 
     <div class="mb-3">

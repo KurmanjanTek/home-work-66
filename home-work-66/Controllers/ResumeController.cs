@@ -1,4 +1,4 @@
-﻿using home_work_66.Models;
+using home_work_66.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -19,8 +19,28 @@ public class ResumeController : Controller
     }
 
     [HttpGet]
-    public IActionResult Create()
+    public async Task<IActionResult> GetResumes()
     {
+        User? currentUser = await _userManager.GetUserAsync(User);
+
+        if (currentUser == null)
+        {
+            return Unauthorized();
+        }
+
+        List<Resume> resumes = await _db.Resumes
+            .Include(r => r.Category)
+            .Where(r => r.UserId == currentUser.Id)
+            .OrderByDescending(r => r.UpdatedAt)
+            .ToListAsync();
+
+        return PartialView("~/Views/Resume/Partials/_ResumesList.cshtml", resumes);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Create()
+    {
+        ViewBag.Categories = await _db.Categories.ToListAsync();
         return PartialView("~/Views/Resume/Partials/_CreateResume.cshtml", new Resume());
     }
 
@@ -41,12 +61,15 @@ public class ResumeController : Controller
         
         if (!ModelState.IsValid)
         {
-            var errors = ModelState.Where(x => x.Value != null && x.Value.Errors.Count > 0).ToDictionary(x => x.Key, x => x.Value!.Errors.Select(e => e.ErrorMessage).ToArray());
+            var errors = ModelState.Where(x => x.Value != null && x.Value.Errors.Count > 0)
+                .SelectMany(x => x.Value!.Errors)
+                .Select(e => e.ErrorMessage);
+            string message = string.Join("\n", errors);
 
             return Json(new
             {
                 success = false,
-                errors
+                message = string.IsNullOrWhiteSpace(message) ? "Пожалуйста, заполните все обязательные поля корректно" : message
             });
         }
 
@@ -82,6 +105,7 @@ public class ResumeController : Controller
             return NotFound();
         }
 
+        ViewBag.Categories = await _db.Categories.ToListAsync();
         return PartialView("~/Views/Resume/Partials/_EditResume.cshtml", resume);
     }
     
@@ -102,12 +126,15 @@ public class ResumeController : Controller
 
         if (!ModelState.IsValid)
         {
-            var errors = ModelState.Where(x => x.Value != null && x.Value.Errors.Count > 0).ToDictionary(x => x.Key, x => x.Value!.Errors.Select(e => e.ErrorMessage).ToArray());
+            var errors = ModelState.Where(x => x.Value != null && x.Value.Errors.Count > 0)
+                .SelectMany(x => x.Value!.Errors)
+                .Select(e => e.ErrorMessage);
+            string message = string.Join("\n", errors);
 
             return Json(new
             {
                 success = false,
-                errors
+                message = string.IsNullOrWhiteSpace(message) ? "Пожалуйста, заполните все обязательные поля корректно" : message
             });
         }
 
@@ -123,7 +150,7 @@ public class ResumeController : Controller
         }
 
         resume.Title = model.Title;
-        resume.Category = model.Category;
+        resume.CategoryId = model.CategoryId;
         resume.Salary = model.Salary;
 
         resume.Email = model.Email;
@@ -141,7 +168,6 @@ public class ResumeController : Controller
     }
     
     [HttpPost]
-    [ValidateAntiForgeryToken]
     public async Task<IActionResult> UpdateDate(int id)
     {
         User? currentUser = await _userManager.GetUserAsync(User);
@@ -162,7 +188,7 @@ public class ResumeController : Controller
 
         await _db.SaveChangesAsync();
 
-        return RedirectToAction("Index", "User");
+        return Json(new { success = true });
     }
     
     [HttpGet]
@@ -282,7 +308,7 @@ public class ResumeController : Controller
             return NotFound();
         }
 
-        return View(workExperience);
+        return View("~/Views/Resume/WorkExperience/EditWorkExperience.cshtml", workExperience);
     }
 
     [HttpPost]
@@ -291,13 +317,13 @@ public class ResumeController : Controller
     {
         if (!ModelState.IsValid)
         {
-            return View(workExperience);
+            return View("~/Views/Resume/WorkExperience/EditWorkExperience.cshtml", workExperience);
         }
 
         _db.WorkExperiences.Update(workExperience);
         await _db.SaveChangesAsync();
 
-        return RedirectToAction("Index", "User");
+        return RedirectToAction("Details", new { id = workExperience.ResumeId });
     }
 
     [HttpPost]
@@ -337,6 +363,7 @@ public class ResumeController : Controller
         }
 
         Resume? resume = await _db.Resumes
+            .Include(r => r.Category)
             .Include(r => r.WorkExperiences)
             .Include(r => r.Educations)
             .Include(r => r.Courses)
@@ -367,7 +394,7 @@ public class ResumeController : Controller
             return NotFound();
         }
 
-        return View(education);
+        return View("~/Views/Resume/Education/EditEducation.cshtml", education);
     }
 
     [HttpPost]
@@ -386,7 +413,7 @@ public class ResumeController : Controller
 
         if (!ModelState.IsValid)
         {
-            return View(education);
+            return View("~/Views/Resume/Education/EditEducation.cshtml", education);
         }
 
         _db.Educations.Update(education);
@@ -437,12 +464,8 @@ public class ResumeController : Controller
         {
             return NotFound();
         }
-        if (course == null)
-        {
-            return NotFound();
-        }
 
-        return View(course);
+        return View("~/Views/Resume/Courses/EditCourse.cshtml", course);
     }
 
     [HttpPost]
@@ -458,7 +481,7 @@ public class ResumeController : Controller
 
         if (!ModelState.IsValid)
         {
-            return View(course);
+            return View("~/Views/Resume/Courses/EditCourse.cshtml", course);
         }
 
         _db.Courses.Update(course);
@@ -499,7 +522,6 @@ public class ResumeController : Controller
     }
     
     [HttpPost]
-    [ValidateAntiForgeryToken]
     public async Task<IActionResult> TogglePublication(int id)
     {
         User? currentUser = await _userManager.GetUserAsync(User);
@@ -521,14 +543,18 @@ public class ResumeController : Controller
 
         await _db.SaveChangesAsync();
 
-        return RedirectToAction("Index", "User");
+        return Json(new { success = true });
     }
     
     [HttpGet]
     [AllowAnonymous]
     public async Task<IActionResult> Published()
     {
-        List<Resume> resumes = await _db.Resumes.Where(r => r.IsPublished).OrderByDescending(r => r.UpdatedAt).ToListAsync();
+        List<Resume> resumes = await _db.Resumes
+            .Include(r => r.Category)
+            .Where(r => r.IsPublished)
+            .OrderByDescending(r => r.UpdatedAt)
+            .ToListAsync();
 
         return View(resumes);
     }
@@ -537,7 +563,12 @@ public class ResumeController : Controller
     [AllowAnonymous]
     public async Task<IActionResult> PublicDetails(int id)
     {
-        Resume? resume = await _db.Resumes.Include(r => r.WorkExperiences).Include(r => r.Educations).Include(r => r.Courses).FirstOrDefaultAsync(r => r.Id == id && r.IsPublished);
+        Resume? resume = await _db.Resumes
+            .Include(r => r.Category)
+            .Include(r => r.WorkExperiences)
+            .Include(r => r.Educations)
+            .Include(r => r.Courses)
+            .FirstOrDefaultAsync(r => r.Id == id && r.IsPublished);
 
         if (resume == null)
         {
