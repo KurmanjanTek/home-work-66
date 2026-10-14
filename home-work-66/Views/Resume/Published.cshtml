@@ -1,4 +1,4 @@
-﻿@model List<home_work_66.Models.Resume>
+@model List<home_work_66.Models.Resume>
 
 @{
     ViewData["Title"] = "Резюме";
@@ -26,7 +26,7 @@
                     <h5 class="card-title">@resume.Title</h5>
 
                     <p class="mb-1">
-                        <strong>Категория:</strong> @resume.Category
+                        <strong>Категория:</strong> @resume.Category?.Name
                     </p>
 
                     @if (resume.Salary != null)

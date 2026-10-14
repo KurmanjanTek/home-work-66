@@ -1,4 +1,4 @@
-﻿using home_work_66.Models;
+using home_work_66.Models;
 using home_work_66.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace home_work_66.Controllers;
 
-[Authorize(Roles = "user")]
+[Authorize]
 public class UserController : Controller
 {
     private readonly UserManager<User> _userManager;
@@ -32,6 +32,7 @@ public class UserController : Controller
         }
         
         List<Resume> resumes = await _db.Resumes
+            .Include(resume => resume.Category)
             .Where(resume => resume.UserId == currentUser.Id)
             .OrderByDescending(resume => resume.UpdatedAt)
             .ToListAsync();
@@ -39,6 +40,26 @@ public class UserController : Controller
         ViewBag.Resumes = resumes;
 
         return View(currentUser);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> EditProfile()
+    {
+        User? currentUser = await _userManager.GetUserAsync(User);
+
+        if (currentUser == null)
+        {
+            return Unauthorized();
+        }
+
+        EditProfileViewModel model = new EditProfileViewModel
+        {
+            UserName = currentUser.UserName,
+            Email = currentUser.Email,
+            PhoneNumber = currentUser.PhoneNumber
+        };
+
+        return PartialView("_EditProfilePartialView", model);
     }
 
     [HttpPost]
@@ -49,7 +70,21 @@ public class UserController : Controller
 
         if (currentUser == null)
         {
-            return RedirectToAction("Login", "Account");
+            return Json(new { success = false, message = "Пользователь не найден" });
+        }
+
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState.Where(x => x.Value != null && x.Value.Errors.Count > 0)
+                .SelectMany(x => x.Value!.Errors)
+                .Select(e => e.ErrorMessage);
+            string message = string.Join("\n", errors);
+
+            return Json(new
+            {
+                success = false,
+                message = string.IsNullOrWhiteSpace(message) ? "Пожалуйста, заполните все обязательные поля корректно" : message
+            });
         }
 
         currentUser.UserName = model.UserName;
@@ -75,15 +110,16 @@ public class UserController : Controller
 
         if (!result.Succeeded)
         {
-            foreach (IdentityError error in result.Errors)
-            {
-                ModelState.AddModelError("", error.Description);
-            }
-
-            ViewBag.OpenEditProfileModal = true;
-            return View("Index", currentUser);
+            string message = string.Join("\n", result.Errors.Select(e => e.Description));
+            return Json(new { success = false, message });
         }
 
-        return RedirectToAction("Index");
+        return Json(new
+        {
+            success = true,
+            img = currentUser.AvatarUrl,
+            name = currentUser.UserName,
+            email = currentUser.Email
+        });
     }
 }

@@ -7,10 +7,10 @@ namespace home_work_66.Models;
 public class HeadHunterContext: IdentityDbContext<User, IdentityRole<int>, int>
 {
     public DbSet<User> Users { get; set; }
-    public HeadHunterContext(DbContextOptions<HeadHunterContext> options) : base(options) {}
-    
     public DbSet<Resume> Resumes { get; set; }
+    public DbSet<Category> Categories { get; set; }
     public DbSet<WorkExperience> WorkExperiences { get; set; }
     public DbSet<Education> Educations { get; set; }
     public DbSet<Course> Courses { get; set; }
+    public HeadHunterContext(DbContextOptions<HeadHunterContext> options) : base(options) {}
 }
