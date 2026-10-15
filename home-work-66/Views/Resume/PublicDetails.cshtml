@@ -127,5 +127,66 @@
 
         </div>
     </div>
-
+    
+    @if (User.IsInRole("company"))
+    {
+        <div class="mt-4">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#contactApplicantModal">
+                Написать соискателю
+            </button>
+        </div>
+    }
 </div>
+@if (User.IsInRole("company"))
+{
+    <div class="modal fade" id="contactApplicantModal" tabindex="-1" aria-labelledby="contactApplicantModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="contactApplicantModalLabel">Выберите вакансию</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    @if (ViewBag.Vacancies != null && ViewBag.Vacancies.Count > 0)
+                    {
+                        <form asp-controller="Chat" asp-action="CreateFromResume" method="post">
+
+                            @Html.AntiForgeryToken()
+
+                            <input type="hidden" name="resumeId" value="@Model.Id" />
+
+                            <div class="mb-3">
+                                <label class="form-label">Вакансия</label>
+
+                                <select name="vacancyId" class="form-select" required>
+                                    <option value="">Выберите вакансию</option>
+
+                                    @foreach (var vacancy in ViewBag.Vacancies)
+                                    {
+                                        <option value="@vacancy.Id">@vacancy.Title</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">
+                                Открыть чат
+                            </button>
+
+                        </form>
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">
+                            У вас нет опубликованных вакансий.
+                        </p>
+                    }
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+}

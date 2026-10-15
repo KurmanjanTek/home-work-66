@@ -597,6 +597,16 @@ public class ResumeController : Controller
         {
             return NotFound();
         }
+        
+        if (User.Identity != null && User.Identity.IsAuthenticated && User.IsInRole("company"))
+        {
+            User? currentCompany = await _userManager.GetUserAsync(User);
+
+            if (currentCompany != null)
+            {
+                ViewBag.Vacancies = await _db.Vacancies.Where(v => v.CompanyId == currentCompany.Id && v.IsPublished).OrderByDescending(v => v.CreatedAt).ToListAsync();
+            }
+        }
 
         return View(resume);
     }
