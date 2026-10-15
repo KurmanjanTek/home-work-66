@@ -171,6 +171,39 @@ namespace home_work_66.Migrations
                     b.ToTable("Categories");
                 });
 
+            modelBuilder.Entity("home_work_66.Models.Chat", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ResumeId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("VacancyId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("ResumeId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("VacancyId");
+
+                    b.ToTable("Chats");
+                });
+
             modelBuilder.Entity("home_work_66.Models.Course", b =>
                 {
                     b.Property<int>("Id")
@@ -227,6 +260,34 @@ namespace home_work_66.Migrations
                     b.HasIndex("ResumeId");
 
                     b.ToTable("Educations");
+                });
+
+            modelBuilder.Entity("home_work_66.Models.Message", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ChatId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Messages");
                 });
 
             modelBuilder.Entity("home_work_66.Models.Resume", b =>
@@ -496,6 +557,41 @@ namespace home_work_66.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("home_work_66.Models.Chat", b =>
+                {
+                    b.HasOne("home_work_66.Models.User", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("home_work_66.Models.Resume", "Resume")
+                        .WithMany()
+                        .HasForeignKey("ResumeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("home_work_66.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("home_work_66.Models.Vacancy", "Vacancy")
+                        .WithMany()
+                        .HasForeignKey("VacancyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Company");
+
+                    b.Navigation("Resume");
+
+                    b.Navigation("User");
+
+                    b.Navigation("Vacancy");
+                });
+
             modelBuilder.Entity("home_work_66.Models.Course", b =>
                 {
                     b.HasOne("home_work_66.Models.Resume", "Resume")
@@ -516,6 +612,17 @@ namespace home_work_66.Migrations
                         .IsRequired();
 
                     b.Navigation("Resume");
+                });
+
+            modelBuilder.Entity("home_work_66.Models.Message", b =>
+                {
+                    b.HasOne("home_work_66.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("home_work_66.Models.Resume", b =>

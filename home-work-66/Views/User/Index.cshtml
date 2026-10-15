@@ -13,8 +13,7 @@ Layout = "_Layout";
     </div>
 </div>
 
-@if (User.IsInRole("user"))
-{
+
 <div class="container py-4">
     <div class="row justify-content-center mb-5">
         <div class="col-md-8 col-lg-6">
@@ -27,12 +26,15 @@ Layout = "_Layout";
                             class="rounded-circle img-thumbnail object-fit-cover shadow-sm"
                             style="width: 100px; height: 100px;"
                             id="userAvatar" />
-                            <a asp-controller="User" asp-action="EditProfile" class="btn btn-sm btn-dark rounded-circle position-absolute bottom-0 end-0 shadow-sm d-flex align-items-center justify-content-center"
-                               style="width: 32px; height: 32px;"
-                               data-bs-toggle="modal" data-bs-target="#exampleModal"
-                               title="Редактировать профиль" id="editLink">
-                                <i class="bi bi-pencil-fill text-white" style="font-size: 0.8rem;"></i>
-                            </a>
+                            @if (ViewBag.IsOwner == true)
+                            {
+                                <a asp-controller="User" asp-action="EditProfile" class="btn btn-sm btn-dark rounded-circle position-absolute bottom-0 end-0 shadow-sm d-flex align-items-center justify-content-center"
+                                   style="width: 32px; height: 32px;"
+                                   data-bs-toggle="modal" data-bs-target="#exampleModal"
+                                   title="Редактировать профиль" id="editLink">
+                                    <i class="bi bi-pencil-fill text-white" style="font-size: 0.8rem;"></i>
+                                </a>
+                            }
                         </div>
                         <div>
                             <h3 class="fw-bold mb-1" id="userName">@Model.UserName</h3>
@@ -48,17 +50,20 @@ Layout = "_Layout";
     <div class="row justify-content-center">
         <div class="col-md-10 col-lg-8">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h4 class="fw-bold mb-0">Мои резюме</h4>
-                <button class="btn btn-primary btn-sm rounded-pill px-3" id="createResumeBtn" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                    <i class="bi bi-plus-lg me-1"></i> Создать резюме
-                </button>
+                <h4 class="fw-bold mb-0">@(ViewBag.IsOwner == true ? "Мои резюме" : "Резюме")</h4>
+                @if (ViewBag.IsOwner == true)
+                {
+                    <button class="btn btn-primary btn-sm rounded-pill px-3" id="createResumeBtn" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                        <i class="bi bi-plus-lg me-1"></i> Создать резюме
+                    </button>
+                }
             </div>
             <div id="resumesContainer" class="row g-3">
             </div>
         </div>
     </div>
 </div>
-}
+
 
 
 @section Scripts {
@@ -95,13 +100,9 @@ Layout = "_Layout";
     });
     
     function loadResumes() {
-        $.get('@Url.Action("GetResumes", "Resume")')
-            .done(function (data) {
-                $('#resumesContainer').html(data);
-            })
-            .fail(function (xhr) {
-                $('#resumesContainer').html('<div class="col-12"><p class="text-danger">Ошибка загрузки резюме: ' + xhr.status + '</p></div>');
-            });
+        $.get('@Url.Action("GetResumes", "Resume")?userId=@Model.Id', function (data) {
+            $('#resumesContainer').html(data);
+        });
     }
     $(document).ready(function() {
         loadResumes();

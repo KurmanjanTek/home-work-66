@@ -1,8 +1,8 @@
-﻿@{
+@{
     ViewBag.Title = "Главная - HeadHunter";
     Layout = "_Layout";
 }
-<h1>@(User.IsInRole("user") ? "Вакансии" : "Резюме")</h1>
+<h1>@(User.IsInRole("company") ? "Резюме" : "Вакансии")</h1>
 <div class="container py-4">
     <div id="contentContainer" class="row justify-content-center">
    
@@ -13,22 +13,16 @@
     <script>
         let listContainer = $('#contentContainer');
         $(document).ready(function () {
-            @if (User.IsInRole("user"))
-            {
-                <text>
-                    listContainer.load('@Url.Action("GetVacancies", "Main")')
-                </text>
-            }
-            else if (User.IsInRole("company")) 
+            @if (User.IsInRole("company"))
             {
                 <text>
                     listContainer.load('@Url.Action("Published", "Resume")')
                 </text>
             }
-            else 
+            else
             {
                 <text>
-                    listContainer.load('@Url.Action("GetVacancies", "Main")')
+                    listContainer.load('@Url.Action("GetVacancies", "Company")')
                 </text>
             }
         });

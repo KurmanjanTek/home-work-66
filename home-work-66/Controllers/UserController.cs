@@ -8,7 +8,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace home_work_66.Controllers;
 
-[Authorize]
 public class UserController : Controller
 {
     private readonly UserManager<User> _userManager;
@@ -22,27 +21,35 @@ public class UserController : Controller
         _db = db;
     }
 
-    public async Task<IActionResult> Index()
+    [HttpGet]
+    [AllowAnonymous]
+    public async Task<IActionResult> Index(int? id)
     {
         User? currentUser = await _userManager.GetUserAsync(User);
 
-        if (currentUser == null)
+        if (id == null)
         {
-            return RedirectToAction("Login", "Account");
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            id = currentUser.Id;
         }
-        
-        List<Resume> resumes = await _db.Resumes
-            .Include(resume => resume.Category)
-            .Where(resume => resume.UserId == currentUser.Id)
-            .OrderByDescending(resume => resume.UpdatedAt)
-            .ToListAsync();
 
-        ViewBag.Resumes = resumes;
+        var user = await _db.Users.FindAsync(id);
+        if (user == null)
+        {
+            return NotFound();
+        }
 
-        return View(currentUser);
+        bool isOwner = currentUser != null && currentUser.Id == user.Id;
+        ViewBag.IsOwner = isOwner;
+
+        return View(user);
     }
 
     [HttpGet]
+    [Authorize]
     public async Task<IActionResult> EditProfile()
     {
         User? currentUser = await _userManager.GetUserAsync(User);
@@ -63,6 +70,7 @@ public class UserController : Controller
     }
 
     [HttpPost]
+    [Authorize]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EditProfile(EditProfileViewModel model)
     {
@@ -121,5 +129,23 @@ public class UserController : Controller
             name = currentUser.UserName,
             email = currentUser.Email
         });
+    }
+    [Authorize]
+    public async Task<IActionResult> Respond(int vacancyId, int companyId)
+    {
+        int userId = int.Parse(_userManager.GetUserId(User)!);
+        var resumes = await _db.Resumes
+            .Where(x => x.UserId == userId)
+            .Include(x => x.Category)
+            .ToListAsync();
+
+        var model = new ChatCreateViewModel
+        {
+            VacancyId = vacancyId,
+            CompanyId = companyId,
+            Resumes = resumes
+        };
+
+        return PartialView("_RespondPartialView", model);
     }
 }
