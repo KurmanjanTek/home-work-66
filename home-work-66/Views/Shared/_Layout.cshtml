@@ -32,6 +32,14 @@
                                 <a class="nav-link text-dark" asp-controller="Category" asp-action="Index">Категории</a>
                             </li>
                         }
+                        @if (User.IsInRole("user"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="User" asp-action="MyResponses">
+                                    Мои отклики
+                                </a>
+                            </li>
+                        }
                         <li class="nav-item">
                             @if (User.IsInRole("company"))
                             {
