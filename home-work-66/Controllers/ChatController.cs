@@ -117,4 +117,60 @@ public class ChatController : Controller
         }
         return Json(new { success = false });
     }
+    
+    [HttpPost]
+    [Authorize(Roles = "company")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateFromResume(int resumeId, int vacancyId)
+    {
+        int companyId = int.Parse(_userManager.GetUserId(User)!);
+
+        Resume? resume = await _db.Resumes
+            .FirstOrDefaultAsync(r => r.Id == resumeId && r.IsPublished);
+
+        if (resume == null)
+        {
+            return NotFound();
+        }
+
+        Vacancy? vacancy = await _db.Vacancies
+            .FirstOrDefaultAsync(v => v.Id == vacancyId && v.CompanyId == companyId);
+
+        if (vacancy == null)
+        {
+            return NotFound();
+        }
+
+        Chat? existingChat = await _db.Chats
+            .FirstOrDefaultAsync(c =>
+                c.UserId == resume.UserId &&
+                c.CompanyId == companyId &&
+                c.VacancyId == vacancyId);
+
+        if (existingChat != null)
+        {
+            return RedirectToAction("Index", new
+            {
+                id = existingChat.Id,
+                companyId = existingChat.CompanyId
+            });
+        }
+
+        Chat chat = new Chat
+        {
+            UserId = resume.UserId,
+            CompanyId = companyId,
+            ResumeId = resume.Id,
+            VacancyId = vacancy.Id
+        };
+
+        await _db.Chats.AddAsync(chat);
+        await _db.SaveChangesAsync();
+
+        return RedirectToAction("Index", new
+        {
+            id = chat.Id,
+            companyId = chat.CompanyId
+        });
+    }
 }

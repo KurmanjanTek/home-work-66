@@ -148,4 +148,20 @@ public class UserController : Controller
 
         return PartialView("_RespondPartialView", model);
     }
+    
+    [HttpGet]
+    [Authorize(Roles = "user")]
+    public async Task<IActionResult> MyResponses()
+    {
+        User? currentUser = await _userManager.GetUserAsync(User);
+
+        if (currentUser == null)
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        List<Chat> responses = await _db.Chats.Where(c => c.UserId == currentUser.Id).Include(c => c.Vacancy).Include(c => c.Company).Include(c => c.Resume).ToListAsync();
+
+        return View(responses);
+    }
 }
