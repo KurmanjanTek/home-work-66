@@ -21,37 +21,137 @@ public class CompanyController : Controller
         _webHostEnvironment = webHostEnvironment;
     }
 
-    [Authorize]
-    public async Task<IActionResult> Index()
+    [HttpGet]
+    [AllowAnonymous]
+    public async Task<IActionResult> Index(int? id)
     {
-        var user = await _userManager.GetUserAsync(User);
+        User? currentUser = await _userManager.GetUserAsync(User);
+
+        if (id == null)
+        {
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            if (!await _userManager.IsInRoleAsync(currentUser, "company"))
+            {
+                return Forbid();
+            }
+            id = currentUser.Id;
+        }
+
+        var user = await _context.Users.FindAsync(id);
         if (user == null)
+        {
             return NotFound();
-        var vacancies = await _context.Vacancies.Where(v => v.CompanyId == user.Id).OrderByDescending(v => v.UpdatedAt)
-            .ToListAsync();
-        return View(vacancies);
+        }
+
+        bool isOwner = currentUser != null && currentUser.Id == user.Id;
+        ViewBag.IsOwner = isOwner;
+
+        return View(user);
     }
 
     [HttpGet]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetVacancies()
+    {
+        var vacancies = await _context.Vacancies
+            .Include(v => v.Category)
+            .Include(v => v.Company)
+            .Where(v => v.IsPublished)
+            .OrderByDescending(v => v.UpdatedAt)
+            .ToListAsync();
+
+        return PartialView("~/Views/Company/Partials/_PublishedVacanciesPartialView.cshtml", vacancies);
+    }
+    
+    [HttpGet]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetCompanyVacancies(int? companyId)
+    {
+        User? currentUser = await _userManager.GetUserAsync(User);
+
+        int targetCompanyId;
+        bool isOwner;
+
+        if (companyId.HasValue)
+        {
+            targetCompanyId = companyId.Value;
+            isOwner = currentUser != null && currentUser.Id == targetCompanyId;
+        }
+        else
+        {
+            if (currentUser == null)
+            {
+                return Unauthorized();
+            }
+            targetCompanyId = currentUser.Id;
+            isOwner = true;
+        }
+
+        var query = _context.Vacancies
+            .Include(v => v.Category)
+            .Where(v => v.CompanyId == targetCompanyId);
+
+        if (!isOwner)
+        {
+            query = query.Where(v => v.IsPublished);
+        }
+
+        var vacancies = await query
+            .OrderByDescending(v => v.UpdatedAt)
+            .ToListAsync();
+
+        ViewBag.IsOwner = isOwner;
+        return PartialView("~/Views/Company/Partials/_VacanciesList.cshtml", vacancies);
+    }
+
+    [HttpGet]
+    [AllowAnonymous]
+    public async Task<IActionResult> Details(int id)
+    {
+        var vacancy = await _context.Vacancies
+            .Include(v => v.Category)
+            .Include(v => v.Company)
+            .FirstOrDefaultAsync(v => v.Id == id);
+
+        if (vacancy == null)
+            return NotFound();
+
+        return View(vacancy);
+    }
+
+    [HttpGet]
+    [Authorize(Roles = "company")]
     public async Task<IActionResult> CreateVacancy()
     {
-        var categories = await _context.Categories.ToListAsync();
-        ViewBag.Categories = categories;
-        return PartialView();
+        ViewBag.Categories = await _context.Categories.ToListAsync();
+        return PartialView("~/Views/Company/Partials/_CreateVacancy.cshtml", new CreateVacancyViewModel());
     }
 
     [HttpPost]
+    [Authorize(Roles = "company")]
     public async Task<IActionResult> CreateVacancy(CreateVacancyViewModel model)
     {
         if (!ModelState.IsValid)
         {
-            ViewBag.Categories = await _context.Categories.ToListAsync();
-            return PartialView(model);
+            var errors = ModelState.Where(x => x.Value != null && x.Value.Errors.Count > 0)
+                .SelectMany(x => x.Value!.Errors)
+                .Select(e => e.ErrorMessage);
+            string message = string.Join("\n", errors);
+
+            return Json(new
+            {
+                success = false,
+                message = string.IsNullOrWhiteSpace(message) ? "Пожалуйста, заполните все обязательные поля корректно" : message
+            });
         }
 
         var user = await _userManager.GetUserAsync(User);
         if (user == null)
-            return NotFound();
+            return Json(new { success = false, message = "Пользователь не найден" });
+
         var vacancy = new Vacancy
         {
             Title = model.Title,
@@ -69,23 +169,25 @@ public class CompanyController : Controller
         _context.Vacancies.Add(vacancy);
         await _context.SaveChangesAsync();
 
-        return RedirectToAction(nameof(Index));
+        return Json(new { success = true });
     }
 
     [HttpGet]
+    [Authorize(Roles = "company")]
     public async Task<IActionResult> EditVacancy(int id)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user == null)
             return NotFound();
 
-        var vacancy = _context.Vacancies.FirstOrDefault(v => v.Id == id && v.CompanyId == user.Id);
+        var vacancy = await _context.Vacancies.FirstOrDefaultAsync(v => v.Id == id && v.CompanyId == user.Id);
 
         if (vacancy == null)
             return NotFound();
 
         var model = new CreateVacancyViewModel
         {
+            Id = vacancy.Id,
             Title = vacancy.Title,
             Salary = vacancy.Salary,
             Description = vacancy.Description,
@@ -97,25 +199,35 @@ public class CompanyController : Controller
 
         ViewBag.Categories = await _context.Categories.ToListAsync();
 
-        return PartialView(model);
+        return PartialView("~/Views/Company/Partials/_EditVacancy.cshtml", model);
     }
 
     [HttpPost]
+    [Authorize(Roles = "company")]
     public async Task<IActionResult> EditVacancy(int id, CreateVacancyViewModel model)
     {
         if (!ModelState.IsValid)
         {
-            ViewBag.Categories = await _context.Categories.ToListAsync();
-            return PartialView(model);
+            var errors = ModelState.Where(x => x.Value != null && x.Value.Errors.Count > 0)
+                .SelectMany(x => x.Value!.Errors)
+                .Select(e => e.ErrorMessage);
+            string message = string.Join("\n", errors);
+
+            return Json(new
+            {
+                success = false,
+                message = string.IsNullOrWhiteSpace(message) ? "Пожалуйста, заполните все обязательные поля корректно" : message
+            });
         }
 
         var user = await _userManager.GetUserAsync(User);
         if (user == null)
-            return NotFound();
+            return Json(new { success = false, message = "Пользователь не найден" });
+
         var vacancy = await _context.Vacancies.FirstOrDefaultAsync(v => v.Id == id && v.CompanyId == user.Id);
 
         if (vacancy == null)
-            return NotFound();
+            return Json(new { success = false, message = "Вакансия не найдена" });
 
         vacancy.Title = model.Title;
         vacancy.Salary = model.Salary;
@@ -127,75 +239,97 @@ public class CompanyController : Controller
         vacancy.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
-        return RedirectToAction(nameof(Index));
+        return Json(new { success = true });
     }
 
+    [HttpPost]
+    [Authorize(Roles = "company")]
     public async Task<IActionResult> UpdateVacancy(int id)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user == null)
-            return NotFound();
+            return Json(new { success = false, message = "Пользователь не найден" });
+
         var vacancy = await _context.Vacancies.FirstOrDefaultAsync(v => v.Id == id && v.CompanyId == user.Id);
 
         if (vacancy == null)
-            return NotFound();
+            return Json(new { success = false, message = "Вакансия не найдена" });
+
         vacancy.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
-        return RedirectToAction(nameof(Index));
+        return Json(new { success = true });
     }
 
     [HttpPost]
+    [Authorize(Roles = "company")]
     public async Task<IActionResult> TogglePublish(int id)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user == null)
-            return NotFound();
+            return Json(new { success = false, message = "Пользователь не найден" });
+
         var vacancy = await _context.Vacancies.FirstOrDefaultAsync(v => v.Id == id && v.CompanyId == user.Id);
         if (vacancy == null)
-            return NotFound();
+            return Json(new { success = false, message = "Вакансия не найдена" });
+
         vacancy.IsPublished = !vacancy.IsPublished;
         vacancy.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
-        return RedirectToAction(nameof(Index));
+        return Json(new { success = true });
     }
 
     [HttpGet]
+    [Authorize(Roles = "company")]
     public async Task<IActionResult> EditProfile()
     {
         var user = await _userManager.GetUserAsync(User);
         if (user == null)
             return NotFound();
+
         var model = new EditCompanyProfileViewModel()
         {
-            CompanyName = user.CompanyName,
-            PhoneNumber = user.PhoneNumber,
+            CompanyName = user.CompanyName ?? user.UserName ?? "",
+            PhoneNumber = user.PhoneNumber ?? "",
+            Email = user.Email ?? "",
             AvatarUrl = user.AvatarUrl
         };
-        return PartialView(model);
+        return PartialView("~/Views/Company/Partials/_EditProfile.cshtml", model);
     }
 
     [HttpPost]
+    [Authorize(Roles = "company")]
     public async Task<IActionResult> EditProfile(EditCompanyProfileViewModel model)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user == null)
-            return NotFound();
+            return Json(new { success = false, message = "Пользователь не найден" });
+
         if (!ModelState.IsValid)
         {
-            return PartialView(model);
+            var errors = ModelState.Where(x => x.Value != null && x.Value.Errors.Count > 0)
+                .SelectMany(x => x.Value!.Errors)
+                .Select(e => e.ErrorMessage);
+            string message = string.Join("\n", errors);
+
+            return Json(new
+            {
+                success = false,
+                message = string.IsNullOrWhiteSpace(message) ? "Пожалуйста, заполните все обязательные поля корректно" : message
+            });
         }
 
         user.CompanyName = model.CompanyName;
         user.PhoneNumber = model.PhoneNumber;
+        user.Email = model.Email;
 
-        if (model.Avatar != null)
+        if (model.Avatar != null && model.Avatar.Length > 0)
         {
-            var extension = Path.GetExtension(model.Avatar.FileName);
+            var extension = Path.GetExtension(model.Avatar.FileName).ToLower();
             var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".jfif" };
 
             if (!allowedExtensions.Contains(extension))
             {
-                throw new InvalidOperationException($"Only {string.Join(",", allowedExtensions)} are allowed");
+                return Json(new { success = false, message = $"Разрешены только форматы {string.Join(", ", allowedExtensions)}" });
             }
 
             var wwwPath = _webHostEnvironment.WebRootPath;
@@ -212,6 +346,19 @@ public class CompanyController : Controller
             await model.Avatar.CopyToAsync(fileStream);
         }
 
-        return PartialView(model);
+        var result = await _userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+        {
+            string message = string.Join("\n", result.Errors.Select(e => e.Description));
+            return Json(new { success = false, message });
+        }
+
+        return Json(new
+        {
+            success = true,
+            img = user.AvatarUrl,
+            name = user.CompanyName,
+            email = user.Email
+        });
     }
 }

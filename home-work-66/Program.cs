@@ -16,6 +16,7 @@ builder.Services.AddDbContext<HeadHunterContext>(options => options.UseNpgsql(co
         options.Password.RequireLowercase = true;
         options.Password.RequireDigit = true;
         options.Password.RequireUppercase = true;
+        options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+ абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯөүңӨҮҢ";
     })
     .AddEntityFrameworkStores<HeadHunterContext>();
 var app = builder.Build();

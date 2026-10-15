@@ -5,29 +5,38 @@
     {
         foreach (var resume in Model)
         {
-            <a asp-controller="Resume"
-               asp-action="PublicDetails"
-               asp-route-id="@resume.Id"
-               class="card shadow-sm border-0 rounded-4 mb-3 w-100 text-decoration-none text-dark">
+            <div class="card shadow-sm border-0 rounded-4 mb-3 w-100 position-relative" style="cursor: pointer;">
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h4 class="fw-bold text-dark mb-0">@resume.Title</h4>
+                        <h4 class="fw-bold text-dark mb-0">
+                            <a asp-controller="Resume"
+                               asp-action="PublicDetails"
+                               asp-route-id="@resume.Id"
+                               class="stretched-link text-decoration-none text-dark">
+                                @resume.Title
+                            </a>
+                        </h4>
                         <span class="fs-5 fw-bold text-primary">
-                            @resume.Salary сом
+                            @resume.Salary?.ToString("N0") сом
                         </span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center pt-2 border-top">
-                        <span class="fw-semibold">
+                        <span class="fw-semibold position-relative" style="z-index: 2;">
                             <i class="bi bi-person-circle me-1 text-secondary"></i>
-                            @resume.User?.UserName
+                            <a asp-controller="User"
+                               asp-action="Index"
+                               asp-route-id="@resume.UserId"
+                               class="text-decoration-none text-primary">
+                                @resume.User?.UserName
+                            </a>
                         </span>
                         <small class="text-muted">
                             <i class="bi bi-clock-history me-1"></i>
-                            Обновлено: @resume.UpdatedAt.ToString("dd.MM.yyyy")
+                            Обновлено: @resume.UpdatedAt.ToLocalTime().ToString("dd.MM.yyyy")
                         </small>
                     </div>
                 </div>
-            </a>
+            </div>
         }
     }
     else

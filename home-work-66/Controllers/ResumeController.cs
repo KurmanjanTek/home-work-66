@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace home_work_66.Controllers;
 
-[Authorize(Roles = "user")]
+[Authorize(Roles = "user,admin")]
 public class ResumeController : Controller
 {
     private readonly HeadHunterContext _db;
@@ -19,21 +19,43 @@ public class ResumeController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetResumes()
+    [AllowAnonymous]
+    public async Task<IActionResult> GetResumes(int? userId)
     {
         User? currentUser = await _userManager.GetUserAsync(User);
 
-        if (currentUser == null)
+        int targetUserId;
+        bool isOwner;
+
+        if (userId.HasValue)
         {
-            return Unauthorized();
+            targetUserId = userId.Value;
+            isOwner = currentUser != null && currentUser.Id == targetUserId;
+        }
+        else
+        {
+            if (currentUser == null)
+            {
+                return Unauthorized();
+            }
+            targetUserId = currentUser.Id;
+            isOwner = true;
         }
 
-        List<Resume> resumes = await _db.Resumes
+        var query = _db.Resumes
             .Include(r => r.Category)
-            .Where(r => r.UserId == currentUser.Id)
+            .Where(r => r.UserId == targetUserId);
+
+        if (!isOwner)
+        {
+            query = query.Where(r => r.IsPublished);
+        }
+
+        List<Resume> resumes = await query
             .OrderByDescending(r => r.UpdatedAt)
             .ToListAsync();
 
+        ViewBag.IsOwner = isOwner;
         return PartialView("~/Views/Resume/Partials/_ResumesList.cshtml", resumes);
     }
 

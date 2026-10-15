@@ -82,7 +82,11 @@ public class AccountController : Controller
             {
                 await _userManager.AddToRoleAsync(userToCreate, roleToAssign);
                 await _signInManager.SignInAsync(userToCreate, isPersistent: false);
-                return RedirectToAction("Index", "User");
+                if(model.IsCompany)
+                    return RedirectToAction("Index", "Company");
+                else 
+                    return RedirectToAction("Index", "User");
+                
             }
             foreach (var error in result.Errors)
                 ModelState.AddModelError(string.Empty, error.Description);
@@ -118,7 +122,10 @@ public class AccountController : Controller
                     {
                         return Redirect(model.ReturnUrl);
                     }
-                    return RedirectToAction("Index", "User");
+                    if(User.IsInRole("company"))
+                        return RedirectToAction("Index", "Company");
+                    else 
+                        return RedirectToAction("Index", "User");
                 }
             }
             ModelState.AddModelError("", "Неправильный логин и (или) пароль");
