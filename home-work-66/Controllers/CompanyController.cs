@@ -1,3 +1,4 @@
+using home_work_66.Enums;
 using home_work_66.Models;
 using home_work_66.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -54,16 +55,62 @@ public class CompanyController : Controller
 
     [HttpGet]
     [AllowAnonymous]
-    public async Task<IActionResult> GetVacancies()
+    public async Task<IActionResult> GetVacancies(string? searchString, int? categoryId,VacancySortState sortOrder=VacancySortState.SalaryAsc, int page=1)
     {
-        var vacancies = await _context.Vacancies
+        var query = _context.Vacancies
             .Include(v => v.Category)
             .Include(v => v.Company)
-            .Where(v => v.IsPublished)
-            .OrderByDescending(v => v.UpdatedAt)
-            .ToListAsync();
+            .Where(v => v.IsPublished);
+        if (!string.IsNullOrWhiteSpace(searchString))
+        {
+            query = query.Where(v => v.Title.Contains(searchString));
+        }
 
-        return PartialView("~/Views/Company/Partials/_PublishedVacanciesPartialView.cshtml", vacancies);
+        if (categoryId.HasValue)
+        {
+            query = query.Where(v => v.CategoryId == categoryId.Value);
+        }
+
+        switch (sortOrder)
+        {
+            case VacancySortState.SalaryAsc: 
+                query = query.OrderBy(v => v.Salary); 
+                break;
+            case VacancySortState.SalaryDesc:
+                query = query.OrderByDescending(v => v.Salary);
+                break;
+            case VacancySortState.TitleAsc:
+                query = query.OrderBy(v => v.Title);
+                break;
+            case VacancySortState.TitleDesc:
+                query = query.OrderByDescending(v => v.Title);
+                break;
+            default:
+                query = query.OrderBy(v => v.Salary);
+                break;
+        }
+         ViewBag.SalarySort = sortOrder == VacancySortState.SalaryAsc ? VacancySortState.SalaryDesc : VacancySortState.SalaryAsc;
+         ViewBag.TitleSort = sortOrder == VacancySortState.TitleAsc ? VacancySortState.TitleDesc : VacancySortState.TitleAsc; 
+         ViewBag.Categories = await _context.Categories.ToListAsync();
+         ViewBag.SearchString=searchString;
+         ViewBag.CategoryId=categoryId;
+        
+         int pageSize = 20;
+         var count= await query.CountAsync();
+         var items= await query
+             .Skip((page - 1) * pageSize)
+             .Take(pageSize)
+             .ToListAsync();
+          
+        PageViewModel pvm = new PageViewModel(count, page, pageSize);
+        VacancyIndexViewModel vivm = new VacancyIndexViewModel()
+        {
+             Vacancies = items,
+             PageViewModel = pvm
+        };
+   
+        return PartialView( "~/Views/Company/Partials/_PublishedVacanciesPartialView.cshtml", vivm);
+        
     }
     
     [HttpGet]

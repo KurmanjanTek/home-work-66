@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace home_work_66.Controllers;
 
-[Authorize(Roles = "user,admin")]
+[Authorize(Roles = "user,admin,company")]
 public class ResumeController : Controller
 {
     private readonly HeadHunterContext _db;
@@ -609,5 +609,29 @@ public class ResumeController : Controller
         }
 
         return View(resume);
+    }
+
+    [HttpGet]
+    [Authorize(Roles = "company")]
+    public async Task<IActionResult> BrowseByCategory(int? categoryId)
+    {
+        ViewBag.Categories = await _db.Categories
+            .OrderBy(c => c.Name)
+            .ToListAsync();
+        
+        ViewBag.SelectedCategoryId = categoryId;
+        var query = _db.Resumes
+            .Include(r => r.Category)
+            .Include(r => r.User)
+            .Where(r => r.IsPublished);
+
+        if (categoryId.HasValue)
+        {
+            query=query.Where(r=>r.CategoryId==categoryId.Value);
+        }
+
+        var rezumes = await query.OrderByDescending(r => r.UpdatedAt)
+            .ToListAsync();
+        return View(rezumes);
     }
 }
