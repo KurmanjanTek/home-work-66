@@ -210,7 +210,7 @@ public class CompanyController : Controller
             CategoryId = model.CategoryId,
             CompanyId = user.Id,
             CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
+            UpdatedAt = null,
             IsPublished = false
         };
         _context.Vacancies.Add(vacancy);
