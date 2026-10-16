@@ -22,9 +22,11 @@
                 <div class="card-body p-4">
 
                     <h4 class="fw-bold mb-2">
-                        @item.Vacancy.Title
+                        <a asp-controller="Company" asp-action="Details" asp-route-id="@item.Vacancy.Id" class="text-decoration-none">
+                            @item.Vacancy.Title
+                        </a>
                     </h4>
-
+                    
                     <p class="text-muted mb-4">
                         Откликов: @item.Responses.Count
                     </p>
