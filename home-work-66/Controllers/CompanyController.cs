@@ -361,4 +361,35 @@ public class CompanyController : Controller
             email = user.Email
         });
     }
+    
+    [HttpGet]
+    [Authorize(Roles = "company")]
+    public async Task<IActionResult> MyResponses()
+    {
+        User? currentCompany = await _userManager.GetUserAsync(User);
+
+        if (currentCompany == null)
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        List<Chat> chats = await _context.Chats
+            .Where(c => c.CompanyId == currentCompany.Id)
+            .Include(c => c.Vacancy)
+            .Include(c => c.User)
+            .Include(c => c.Resume)
+            .OrderByDescending(c => c.Id)
+            .ToListAsync();
+
+        List<CompanyResponsesViewModel> responses = chats
+            .GroupBy(c => c.VacancyId)
+            .Select(group => new CompanyResponsesViewModel
+            {
+                Vacancy = group.First().Vacancy!,
+                Responses = group.ToList()
+            })
+            .ToList();
+
+        return View(responses);
+    }
 }
