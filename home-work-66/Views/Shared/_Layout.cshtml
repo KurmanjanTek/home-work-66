@@ -43,6 +43,11 @@
                         @if (User.IsInRole("company"))
                         {
                             <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Resume" asp-action="BrowseByCategory">
+                                    Резюме соискателей 
+                                </a>
+                            </li>
+                            <li class="nav-item">
                                 <a class="nav-link text-dark" asp-controller="Company" asp-action="MyResponses">
                                     Отклики
                                 </a>
